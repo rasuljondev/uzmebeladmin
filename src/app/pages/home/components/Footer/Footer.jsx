@@ -3,31 +3,32 @@
 import { config } from "../../../../../config/config";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 
 export default function Footer() {
-  const getInitialSettings = () => {
+  // Initial state with config defaults for SSR consistency
+  const [settings, setSettings] = useState({
+    companyName: config.companyName,
+    logo: config.logoUrl,
+    phoneNumber: config.phoneNumber,
+    email: config.email,
+    socialLinks: config.socialLinks.concat({ name: "Telegram", url: "" }),
+  });
+  const [userPhone, setUserPhone] = useState("");
+
+  // Update settings with localStorage after hydration
+  useEffect(() => {
     if (typeof window !== "undefined") {
       const storedSettings = JSON.parse(localStorage.getItem("settings")) || {};
-      return {
+      setSettings({
         companyName: storedSettings.companyName || config.companyName,
         logo: storedSettings.logo || config.logoUrl,
         phoneNumber: storedSettings.phoneNumber || config.phoneNumber,
         email: storedSettings.email || config.email,
         socialLinks: storedSettings.socialLinks || config.socialLinks.concat({ name: "Telegram", url: "" }),
-      };
+      });
     }
-    return {
-      companyName: config.companyName,
-      logo: config.logoUrl,
-      phoneNumber: config.phoneNumber,
-      email: config.email,
-      socialLinks: config.socialLinks.concat({ name: "Telegram", url: "" }),
-    };
-  };
-
-  const [settings] = useState(getInitialSettings());
-  const [userPhone, setUserPhone] = useState("");
+  }, []);
 
   const handleSend = () => {
     console.log("User phone number:", userPhone); // Placeholder for future functionality
@@ -112,7 +113,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="mt-8 text-center text-gray-500">
-        &copy; {new Date().getFullYear()} {settings.companyName}. All rights reserved.
+        © {new Date().getFullYear()} {settings.companyName}. All rights reserved.
       </div>
     </footer>
   );
