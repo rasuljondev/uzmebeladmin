@@ -4,7 +4,7 @@ import { config } from "../../../config/config";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import Header from "../../../components/Header/Header";
+import Header from "../home/components/Header/Header";
 
 export default function CartPage() {
   const [basket, setBasket] = useState([]);

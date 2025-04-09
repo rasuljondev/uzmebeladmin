@@ -6,8 +6,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import SearchBar from "../../../../components/SearchBar/SearchBar";
-import Header from "../../../../components/Header/Header";
+import SearchBar from "../../home/components/SearchBar/SearchBar";
+import Header from "../../home/components/Header/Header";
 
 export default function SubcategoryPage() {
   const { category } = useParams();

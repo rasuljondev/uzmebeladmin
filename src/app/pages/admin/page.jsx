@@ -20,28 +20,38 @@ export default function AdminPanel() {
   });
   const [newCategory, setNewCategory] = useState({ name: "", image: null });
   const [newSubcategory, setNewSubcategory] = useState({ name: "", image: null, category: "" });
-  const [settings, setSettings] = useState({ companyName: "UZ Furniture", logo: null });
+  const [settings, setSettings] = useState({
+    companyName: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.companyName || config.companyName) : config.companyName,
+    logo: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.logo || config.logoUrl) : config.logoUrl,
+    phoneNumber: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.phoneNumber || config.phoneNumber) : config.phoneNumber,
+    email: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.email || config.email) : config.email,
+    heroImages: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.heroImages || config.heroImages || []) : config.heroImages || [],
+    showroom: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.showroom || config.showroom || [{ title: "", description: "", image: "" }, { title: "", description: "", image: "" }]) : config.showroom || [{ title: "", description: "", image: "" }, { title: "", description: "", image: "" }],
+    socialLinks: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.socialLinks || config.socialLinks.concat({ name: "Telegram", url: "" }) || [
+      { name: "Facebook", url: "" },
+      { name: "Instagram", url: "" },
+      { name: "Twitter", url: "" },
+      { name: "Telegram", url: "" },
+    ]) : config.socialLinks.concat({ name: "Telegram", url: "" }) || [
+      { name: "Facebook", url: "" },
+      { name: "Instagram", url: "" },
+      { name: "Twitter", url: "" },
+      { name: "Telegram", url: "" },
+    ],
+  });
   const [editingProduct, setEditingProduct] = useState(null);
   const [sizeInput, setSizeInput] = useState("");
   const [activeTab, setActiveTab] = useState("products");
 
-  // Predefined colors for checkboxes
   const predefinedColors = ["Red", "Green", "Blue", "Gray", "Black", "White", "Beige", "Navy"];
 
-  // Load initial data
   useEffect(() => {
     const storedProducts = JSON.parse(localStorage.getItem("products")) || flattenProducts(config.categories);
     const storedCategories = JSON.parse(localStorage.getItem("categories")) || config.categories;
-    const storedSettings = JSON.parse(localStorage.getItem("settings")) || {
-      companyName: config.companyName,
-      logo: config.logoUrl,
-    };
     setProducts(storedProducts);
     setCategories(storedCategories);
-    setSettings(storedSettings);
   }, []);
 
-  // Save changes
   useEffect(() => {
     localStorage.setItem("products", JSON.stringify(products));
     localStorage.setItem("categories", JSON.stringify(categories));
@@ -62,7 +72,6 @@ export default function AdminPanel() {
     );
   };
 
-  // Product Management
   const addProduct = () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category || !newProduct.subcategory) {
       alert("Name, price, category, and subcategory are required!");
@@ -101,9 +110,7 @@ export default function AdminPanel() {
   const toggleColor = (color) => {
     setNewProduct((prev) => ({
       ...prev,
-      colors: prev.colors.includes(color)
-        ? prev.colors.filter((c) => c !== color)
-        : [...prev.colors, color],
+      colors: prev.colors.includes(color) ? prev.colors.filter((c) => c !== color) : [...prev.colors, color],
     }));
   };
 
@@ -116,7 +123,6 @@ export default function AdminPanel() {
 
   const removeSize = (size) => setNewProduct({ ...newProduct, sizes: newProduct.sizes.filter((s) => s !== size) });
 
-  // Category Management
   const addCategory = () => {
     if (!newCategory.name) {
       alert("Category name is required!");
@@ -137,16 +143,12 @@ export default function AdminPanel() {
       cat.name === newSubcategory.category
         ? {
             ...cat,
-            subcategories: [
-              ...cat.subcategories,
-              { name: newSubcategory.name, image: imageUrl, products: [] },
-            ],
+            subcategories: [...cat.subcategories, { name: newSubcategory.name, image: imageUrl, products: [] }],
           }
         : cat
     );
     setCategories(updatedCategories);
     setNewSubcategory({ name: "", image: null, category: "" });
-    console.log("Updated categories:", updatedCategories);
   };
 
   const deleteCategory = (categoryName) => {
@@ -168,15 +170,33 @@ export default function AdminPanel() {
     }
   };
 
-  // Settings Management
   const updateSettings = () => {
-    const logoUrl = settings.logo instanceof File ? URL.createObjectURL(settings.logo) : settings.logo;
-    setSettings({ ...settings, logo: logoUrl });
+    const updatedSettings = {
+      ...settings,
+      logo: settings.logo instanceof File ? URL.createObjectURL(settings.logo) : settings.logo,
+      heroImages: settings.heroImages.map((img) => (img instanceof File ? URL.createObjectURL(img) : img)),
+      showroom: settings.showroom.map((item, index) => ({
+        ...item,
+        image: item.image instanceof File ? URL.createObjectURL(item.image) : item.image || config.showroom[index].image,
+      })),
+    };
+    setSettings(updatedSettings);
+  };
+
+  const handleShowroomChange = (index, field, value) => {
+    const updatedShowroom = [...settings.showroom];
+    updatedShowroom[index] = { ...updatedShowroom[index], [field]: value };
+    setSettings({ ...settings, showroom: updatedShowroom });
+  };
+
+  const handleSocialLinkChange = (index, field, value) => {
+    const updatedSocialLinks = [...settings.socialLinks];
+    updatedSocialLinks[index] = { ...updatedSocialLinks[index], [field]: value };
+    setSettings({ ...settings, socialLinks: updatedSocialLinks });
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
       <div className="w-64 bg-white shadow-lg p-6 flex flex-col gap-4">
         <h2 className="text-2xl font-bold text-gray-800">Admin Dashboard</h2>
         <button
@@ -199,7 +219,6 @@ export default function AdminPanel() {
         </button>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-8">
         {activeTab === "products" && (
           <div className="bg-white p-6 rounded-xl shadow-md">
@@ -313,8 +332,6 @@ export default function AdminPanel() {
                 Cancel
               </button>
             )}
-
-            {/* Product List */}
             <div className="mt-12">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">Products</h3>
               <div className="overflow-x-auto">
@@ -351,10 +368,7 @@ export default function AdminPanel() {
                           >
                             Edit
                           </button>
-                          <button
-                            onClick={() => deleteProduct(product.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
+                          <button onClick={() => deleteProduct(product.id)} className="text-red-600 hover:text-red-800">
                             Delete
                           </button>
                         </td>
@@ -370,7 +384,6 @@ export default function AdminPanel() {
         {activeTab === "categories" && (
           <div className="bg-white p-6 rounded-xl shadow-md">
             <h2 className="text-3xl font-bold text-gray-800 mb-6">Manage Categories</h2>
-            {/* Add Category */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Add Category</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -395,8 +408,6 @@ export default function AdminPanel() {
                 Add Category
               </button>
             </div>
-
-            {/* Add Subcategory */}
             <div className="mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Add Subcategory</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -431,17 +442,12 @@ export default function AdminPanel() {
                 Add Subcategory
               </button>
             </div>
-
-            {/* Category List */}
             <h3 className="text-2xl font-bold text-gray-800 mb-6">Categories & Subcategories</h3>
             {categories.map((cat) => (
               <div key={cat.name} className="mb-6 p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center">
                   <h4 className="text-xl font-semibold text-gray-800">{cat.name}</h4>
-                  <button
-                    onClick={() => deleteCategory(cat.name)}
-                    className="text-red-600 hover:text-red-800"
-                  >
+                  <button onClick={() => deleteCategory(cat.name)} className="text-red-600 hover:text-red-800">
                     Delete
                   </button>
                 </div>
@@ -480,6 +486,20 @@ export default function AdminPanel() {
                 onChange={(e) => setSettings({ ...settings, logo: e.target.files[0] })}
                 className="p-3 border rounded-lg w-full text-gray-800"
               />
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={settings.phoneNumber}
+                onChange={(e) => setSettings({ ...settings, phoneNumber: e.target.value })}
+                className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none"
+              />
+              <input
+                type="email"
+                placeholder="Company Email"
+                value={settings.email}
+                onChange={(e) => setSettings({ ...settings, email: e.target.value })}
+                className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none"
+              />
             </div>
             {settings.logo && (
               <div className="mt-4">
@@ -492,6 +512,85 @@ export default function AdminPanel() {
                 />
               </div>
             )}
+            <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-4">Hero Images</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Array.isArray(settings.heroImages) && settings.heroImages.length > 0 ? (
+                settings.heroImages.map((img, index) => (
+                  <div key={index}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const newImages = [...settings.heroImages];
+                        newImages[index] = e.target.files[0];
+                        setSettings({ ...settings, heroImages: newImages });
+                      }}
+                      className="p-3 border rounded-lg w-full text-gray-800"
+                    />
+                    <Image
+                      src={img instanceof File ? URL.createObjectURL(img) : img}
+                      alt={`Hero Image ${index + 1}`}
+                      width={200}
+                      height={100}
+                      className="mt-2 rounded-md"
+                    />
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-800">No hero images available.</p>
+              )}
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-4">Showroom Sections</h3>
+            {settings.showroom.map((section, index) => (
+              <div key={index} className="mb-6">
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={section.title}
+                  onChange={(e) => handleShowroomChange(index, "title", e.target.value)}
+                  className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none mb-2"
+                />
+                <textarea
+                  placeholder="Description"
+                  value={section.description}
+                  onChange={(e) => handleShowroomChange(index, "description", e.target.value)}
+                  className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none mb-2"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleShowroomChange(index, "image", e.target.files[0])}
+                  className="p-3 border rounded-lg w-full text-gray-800 mb-2"
+                />
+                <Image
+                  src={section.image instanceof File ? URL.createObjectURL(section.image) : section.image}
+                  alt={section.title}
+                  width={200}
+                  height={100}
+                  className="rounded-md"
+                />
+              </div>
+            ))}
+            <h3 className="text-xl font-semibold text-gray-800 mt-6 mb-4">Social Links</h3>
+            {settings.socialLinks.map((link, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <input
+                  type="text"
+                  placeholder="Name (e.g., Facebook)"
+                  value={link.name}
+                  onChange={(e) => handleSocialLinkChange(index, "name", e.target.value)}
+                  className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none"
+                  disabled={index < 3} // Lock Facebook, Instagram, Twitter names
+                />
+                <input
+                  type="url"
+                  placeholder="URL"
+                  value={link.url}
+                  onChange={(e) => handleSocialLinkChange(index, "url", e.target.value)}
+                  className="p-3 border rounded-lg w-full text-gray-800 focus:ring-2 focus:ring-[#ff6b6b] focus:outline-none"
+                />
+              </div>
+            ))}
             <button
               onClick={updateSettings}
               className="mt-6 px-6 py-3 bg-[#ff6b6b] text-white rounded-lg hover:bg-[#e55a5a] transition-colors w-full"

@@ -4,11 +4,29 @@ import { config } from "../../../config/config";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Header from "../../../components/Header/Header";
-import { useState } from "react";
+import Header from "../home/components/Header/Header";
+import { useState, useEffect } from "react";
 
 export default function ContactsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [settings, setSettings] = useState({
+    phoneNumber: config.phoneNumber,
+    email: config.email,
+    socialLinks: config.socialLinks,
+    mapLocation: config.mapLocation,
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSettings = JSON.parse(localStorage.getItem("settings")) || {};
+      setSettings({
+        phoneNumber: storedSettings.phoneNumber || config.phoneNumber,
+        email: storedSettings.email || config.email,
+        socialLinks: storedSettings.socialLinks || config.socialLinks,
+        mapLocation: config.mapLocation, // Not editable in admin yet, so keep from config
+      });
+    }
+  }, []);
 
   const handleSearch = (query) => setSearchQuery(query); // Placeholder
 
@@ -24,7 +42,9 @@ export default function ContactsPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="text-gray-600 text-lg">Map Coming Soon (Lat: {config.mapLocation.lat}, Lng: {config.mapLocation.lng})</p>
+            <p className="text-gray-600 text-lg">
+              Map Coming Soon (Lat: {settings.mapLocation.lat}, Lng: {settings.mapLocation.lng})
+            </p>
           </motion.div>
           <motion.div
             className="flex flex-col gap-6"
@@ -37,16 +57,23 @@ export default function ContactsPage() {
               <p className="text-gray-600 mt-2">We’d love to hear from you!</p>
             </div>
             <div>
-              <p className="text-lg text-gray-800"><strong>Phone:</strong> {config.phoneNumber}</p>
-              <p className="text-lg text-gray-800"><strong>Email:</strong> <a href={`mailto:${config.email}`} className="text-[#ff6b6b] hover:underline">{config.email}</a></p>
+              <p className="text-lg text-gray-800">
+                <strong>Phone:</strong> {settings.phoneNumber}
+              </p>
+              <p className="text-lg text-gray-800">
+                <strong>Email:</strong>{" "}
+                <a href={`mailto:${settings.email}`} className="text-[#ff6b6b] hover:underline">
+                  {settings.email}
+                </a>
+              </p>
             </div>
             <div>
               <h3 className="text-xl font-semibold text-gray-800">Follow Us</h3>
               <div className="flex gap-4 mt-2">
-                {config.socialLinks.map((link, index) => (
+                {settings.socialLinks.map((link, index) => (
                   <a
                     key={index}
-                    href={link.url}
+                    href={link.url || "#"} // Fallback to "#" if no URL
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-800 hover:text-[#ff6b6b] transition-colors duration-300"

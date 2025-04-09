@@ -1,6 +1,6 @@
 "use client";
 
-import { config } from "../../config/config";
+import { config } from "../../../../../config/config";
 import Image from "next/image";
 
 export default function Special() {

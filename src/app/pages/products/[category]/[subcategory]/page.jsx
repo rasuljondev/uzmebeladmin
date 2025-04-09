@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Header from "../../../../../components/Header/Header";
+import Header from "../../../home/components/Header/Header";
 
 function ProductCard({ product, onAddToCart, onBuyNow }) {
   const [showOptions, setShowOptions] = useState(false);

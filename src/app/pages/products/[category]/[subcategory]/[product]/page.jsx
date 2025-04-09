@@ -4,7 +4,7 @@ import { config } from "../../../../../../config/config";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Header from "../../../../../../components/Header/Header";
+import Header from "../../../../home/components/Header/Header";
 
 export default function ProductDetailsPage() {
   const { category, subcategory, product } = useParams();

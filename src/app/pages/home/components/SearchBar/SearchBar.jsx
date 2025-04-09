@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { config } from "../../config/config";
+import { config } from "../../../../../config/config";
 
 export default function SearchBar({ onSearch, placeholder = "Search" }) {
   const [searchQuery, setSearchQuery] = useState("");

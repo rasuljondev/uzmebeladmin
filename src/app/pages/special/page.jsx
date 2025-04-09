@@ -1,7 +1,7 @@
 "use client";
 
 import { config } from "../../../config/config";
-import Header from "../../../components/Header/Header";
+import Header from "../home/components/Header/Header";
 
 export default function SpecialPage() {
   return (
