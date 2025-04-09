@@ -1,3 +1,5 @@
+"use client"; // Add this to ensure client-side rendering
+
 import Hero from "./pages/home/components/Hero/Hero";
 import Special from "./pages/home/components/Special/Special";
 import Categories from "./pages/home/components/Categories/Categories";

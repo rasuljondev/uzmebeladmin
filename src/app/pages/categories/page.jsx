@@ -1,42 +1,37 @@
 "use client";
 
-import { config } from "../../../config/config"; // From src/app/pages/categories/
+import { config } from "../../../config/config";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import Header from "../home/components/Header/Header"; // Unified header
+import { useState, useEffect } from "react";
+import Header from "../home/components/Header/Header";
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState(config.categories);
 
-  // Load categories synchronously from localStorage or config
-  const [categories] = useState(
-    typeof window !== "undefined"
-      ? JSON.parse(localStorage.getItem("categories")) || config.categories
-      : config.categories
-  );
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCategories = JSON.parse(localStorage.getItem("categories")) || config.categories;
+      setCategories(storedCategories);
+    }
+  }, []);
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleContactScroll = () => {
-    document.querySelector("footer").scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
     <div className="bg-white min-h-screen">
-      <Header /> {/* Unified header with dynamic settings */}
-
-      {/* Categories Section */}
+      <Header />
       <section className="py-20 px-16">
         <h1 className="text-4xl font-bold text-gray-800 text-center mb-12">Explore Our Categories</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredCategories.map((category, index) => (
             <motion.div
-              key={category.name} // Use category.name as key since it’s unique
-              layoutId={`category-${category.name.toLowerCase().replace(/\s+/g, "-")}`} // Unique layoutId
+              key={category.name}
+              layoutId={`category-${category.name.toLowerCase().replace(/\s+/g, "-")}`}
               className="relative group rounded-xl overflow-hidden shadow-lg"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}

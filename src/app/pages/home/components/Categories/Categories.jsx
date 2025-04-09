@@ -4,15 +4,25 @@ import { config } from "../../../../../config/config";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react"; // Added useEffect
 
 export default function Categories() {
+  const [categories, setCategories] = useState(config.categories);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCategories = JSON.parse(localStorage.getItem("categories")) || config.categories;
+      setCategories(storedCategories);
+    }
+  }, []);
+
   return (
     <section id="categories" className="py-20 px-16 bg-gray-100 text-center">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">Shop by Category</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-        {config.categories.map((category, index) => (
+        {categories.map((category, index) => (
           <motion.div
-            key={index}
+            key={category.name} // Use name as key for uniqueness
             className="relative group rounded-xl overflow-hidden shadow-md bg-white"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}

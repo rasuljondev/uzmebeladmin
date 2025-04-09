@@ -5,21 +5,42 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Added useEffect
 import SearchBar from "../../home/components/SearchBar/SearchBar";
 import Header from "../../home/components/Header/Header";
 
 export default function SubcategoryPage() {
   const { category } = useParams();
-  const selectedCategory = config.categories.find((cat) => cat.name.toLowerCase().replace(/\s+/g, "-") === category);
+  const [categories, setCategories] = useState(config.categories);
   const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedCategories = JSON.parse(localStorage.getItem("categories")) || config.categories;
+      setCategories(storedCategories);
+    }
+  }, []);
+
+  const selectedCategory = categories.find(
+    (cat) => cat.name.toLowerCase().replace(/\s+/g, "-") === category
+  );
   const allProducts = selectedCategory?.subcategories.flatMap((sub) => sub.products) || [];
   const filteredProducts = allProducts.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSearch = (query) => setSearchQuery(query);
+
+  if (!selectedCategory) {
+    return (
+      <div className="bg-white min-h-screen">
+        <Header />
+        <section className="py-20 px-16 text-center">
+          <h1 className="text-4xl font-bold text-gray-800">Category Not Found</h1>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen">
@@ -32,18 +53,21 @@ export default function SubcategoryPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {selectedCategory?.name || "Category"} Subcategories
+          {selectedCategory.name} Subcategories
         </motion.h1>
+        <div className="mb-8">
+          <SearchBar onSearch={handleSearch} placeholder="Search products..." />
+        </div>
         {searchQuery ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {filteredProducts.length > 0 ? (
-              filteredProducts.map((product, index) => (
+              filteredProducts.map((product) => (
                 <motion.div
-                  key={index}
+                  key={product.id || product.name} // Use id or name for uniqueness
                   className="relative w-[300px] h-[400px] rounded-lg overflow-hidden shadow-lg group"
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  transition={{ duration: 0.8 }}
                 >
                   <Image
                     src={product.image}
@@ -70,14 +94,14 @@ export default function SubcategoryPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            {selectedCategory?.subcategories.map((subcategory, index) => (
+            {selectedCategory.subcategories.map((subcategory) => (
               <motion.div
-                key={index}
+                key={subcategory.name}
                 className="relative w-[300px] h-[400px] rounded-lg overflow-hidden shadow-lg group"
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 + index * 0.2 }}
-                whileHover={{ scale: 1.05, rotate: index % 2 === 0 ? 2 : -2, boxShadow: "0 15px 30px rgba(0, 0, 0, 0.2)" }}
+                transition={{ duration: 0.8 }}
+                whileHover={{ scale: 1.05, rotate: 2, boxShadow: "0 15px 30px rgba(0, 0, 0, 0.2)" }}
               >
                 <Link href={`/pages/products/${category}/${subcategory.name.toLowerCase().replace(/\s+/g, "-")}`}>
                   <Image
