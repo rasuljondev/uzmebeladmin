@@ -19,6 +19,7 @@ export default function AdminPanel() {
     subcategory: "",
   });
   const [newCategory, setNewCategory] = useState({ name: "", image: null });
+  localStorage.setItem("categories", JSON.stringify(categories));
   const [newSubcategory, setNewSubcategory] = useState({ name: "", image: null, category: "" });
   const [settings, setSettings] = useState({
     companyName: typeof window !== "undefined" ? (JSON.parse(localStorage.getItem("settings"))?.companyName || config.companyName) : config.companyName,
@@ -128,8 +129,9 @@ export default function AdminPanel() {
       alert("Category name is required!");
       return;
     }
-    const imageUrl = newCategory.image ? URL.createObjectURL(newCategory.image) : "/assets/default.jpg";
-    setCategories([...categories, { name: newCategory.name, image: imageUrl, subcategories: [] }]);
+    const category = localStorage.getItem("categories") || newCategory
+    const imageUrl = category.image ? URL.createObjectURL(category.image) : "/assets/default.jpg";
+    setCategories([...categories, { name: category.name, image: imageUrl, subcategories: [] }]);
     setNewCategory({ name: "", image: null });
   };
 
